@@ -2,7 +2,7 @@
 CLI tool linking between pims and opencart
 
 Features (unchecked are TODO)
-- [ ] Read pims export csv and convert to yml
+- [x] Read pims export csv and display as yml
 - [ ] Read opencart mysql database and display data similar to yml of pims csv export
 - [ ] Reconcile quantities between pims csv and opencart mysql database
 - [ ] Reconcile categories and category products between pims export and opencart database
@@ -83,5 +83,3 @@ Note on `create.sql`
 ```bash
 wget https://raw.githubusercontent.com/opencart/opencart/master/upload/install/opencart.sql -O test/create.sql
 ```
-
-

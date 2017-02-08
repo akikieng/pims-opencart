@@ -95,13 +95,77 @@ func readPims(filename string) *map[string][]Product {
   return &data
 }
 
-func readOc(dsn string) {
-  log.Printf("Reading opencart data from: %s\n", dsn)
+func readOc(dsn string) *map[string][]Product {
+  // log.Printf("Reading opencart data from: %s\n", dsn)
   db, err := sql.Open("mysql", dsn) // "root:password@/opencart"
   if err != nil {
     log.Fatal("connect fails:", err)
   }
-  db.Close()
+  defer db.Close()
+
+  // Open doesn't open a connection. Validate DSN data:
+  // https://github.com/go-sql-driver/mysql/wiki/Examples#a-word-on-sqlopen
+  err = db.Ping()
+  if err != nil {
+      panic(err.Error()) // proper error handling instead of panic in your app
+  }
+
+  // http://go-database-sql.org/retrieving.html
+  data := map[string][]Product{}
+  rows, err := db.Query(`
+      select
+         model, price, quantity,
+         IFNULL(ocko_category_description.name,'No category') as category,
+         pd.name as description
+      from ocko_product
+      left join ocko_product_to_category p2c
+        on p2c.product_id = ocko_product.product_id
+      left join ocko_category_description
+        on ocko_category_description.category_id = p2c.category_id
+      left join ocko_product_description pd
+        on pd.product_id = ocko_product.product_id
+    `)
+  if err != nil {
+    log.Fatal(err)
+  }
+  defer rows.Close()
+  for rows.Next() {
+    pr := Product{}
+    err := rows.Scan(&pr.ID,&pr.Price,&pr.Qty,&pr.Category,&pr.Desc)
+    if err != nil {
+      log.Fatal(err)
+    }
+
+    // http://stackoverflow.com/a/2050629/4126114
+    if _, ok := data[pr.Category]; !ok {
+      data[pr.Category] = []Product{}
+    }
+    data[pr.Category] = append(data[pr.Category],pr)
+    // log.Println(pr.ID)
+  }
+  err = rows.Err()
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  return &data
+}
+
+func printYaml(data *map[string][]Product) {
+          // Golang - How to print struct variables in console?
+          // http://stackoverflow.com/a/24512194/4126114
+          // fmt.Printf("%+v\n", data)
+
+          // convert to yaml
+          // https://github.com/go-yaml/yaml#example
+          // Note:
+          // struct fields are important to be uppercased
+          // documented here: https://godoc.org/gopkg.in/yaml.v2#Marshal
+          y, err := yaml.Marshal(data)
+          if err != nil {
+              log.Fatal(err)
+          }
+          fmt.Println(string(y))
 }
 
 func main() {
@@ -117,22 +181,7 @@ func main() {
           }
           csvFile := c.Args().First() // Get(0)
           data := readPims(csvFile)
-
-          // Golang - How to print struct variables in console?
-          // http://stackoverflow.com/a/24512194/4126114
-          // fmt.Printf("%+v\n", data)
-
-          // convert to yaml
-          // https://github.com/go-yaml/yaml#example
-          // Note:
-          // struct fields are important to be uppercased
-          // documented here: https://godoc.org/gopkg.in/yaml.v2#Marshal
-          y, err := yaml.Marshal(data)
-          if err != nil {
-              return err
-          }
-          fmt.Println(string(y))
-
+          printYaml(data)
           return nil
         },
       },
@@ -145,7 +194,8 @@ func main() {
             log.Fatal("No DSN passed")
           }
           dsn := c.Args().First() // Get(0)
-          readOc(dsn)
+          data := readOc(dsn)
+          printYaml(data)
           return nil
         },
       },
