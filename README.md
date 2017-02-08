@@ -49,6 +49,9 @@ go get github.com/go-sql-driver/mysql
 
 # https://github.com/urfave/cli#using-the-v2-branch
 go get gopkg.in/urfave/cli.v2
+
+# https://github.com/go-yaml/yaml
+go get gopkg.in/yaml.v2
 ```
 
 ### creating a local copy of the db
