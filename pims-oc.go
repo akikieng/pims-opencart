@@ -4,17 +4,22 @@ import (
     "os"
     "gopkg.in/urfave/cli.v2" // imports as package "cli"
     "log"
-    "database/sql"
-    _ "github.com/go-sql-driver/mysql"
 )
 
-func readPims(csvFile) {
+import "database/sql"
+import _ "github.com/go-sql-driver/mysql"
+
+func readPims(csvFile string) {
   log.Println("Reading csv file: ", csvFile)
 }
 
-func readOc(dsn) {
+func readOc(dsn string) {
   log.Printf("Reading opencart data from: %s\n", dsn)
   db, err := sql.Open("mysql", dsn) // "root:password@/opencart"
+  if err != nil {
+    log.Fatal("connect fails:", err)
+  }
+  db.Close()
 }
 
 func main() {
@@ -26,7 +31,7 @@ func main() {
         ArgsUsage: "csvFile",
         Action:  func(c *cli.Context) error {
           if c.NArg() == 0 {
-            log.error("No csv file passed")
+            log.Fatal("No csv file passed")
           }
           csvFile := c.Args().First() // Get(0)
           readPims(csvFile)
@@ -39,10 +44,11 @@ func main() {
         ArgsUsage: "dsn",
         Action:  func(c *cli.Context) error {
           if c.NArg() == 0 {
-            log.error("No DSN passed")
+            log.Fatal("No DSN passed")
           }
           dsn := c.Args().First() // Get(0)
           readOc(dsn)
+          return nil
         },
       },
     },

@@ -9,19 +9,19 @@ Features (unchecked are TODO)
 
 ## Usage
 
-1. Read pims csv export: `go run pims-oc read:pims pims.csv`
+1. Read pims csv export: `go run pims-oc.go read:pims pims.csv`
 
 * `pims.csv` is the excel file of inventory by item exported from pims 2, and then saved as csv manually
 * Produces yml output
 
-2. Read opencart database: `go run pims-oc read:oc <DSN>`
+2. Read opencart database: `go run pims-oc.go read:oc <DSN>`
 
 * DSN is as exemplified on
   [go mysql driver](https://github.com/Go-SQL-Driver/MySQL/#examples):
   e.g. `user:password@/dbname`
 * Produces yml output
 
-3. Reconcile: `go run pims-oc recon pims.csv <DSN>`
+3. Reconcile: `go run pims-oc.go recon pims.csv <DSN>`
 
 ## opencart hosted on a2hosting
 * mysql users on a2hosting are only allowed from `localhost`
@@ -49,8 +49,6 @@ go get github.com/go-sql-driver/mysql
 
 # https://github.com/urfave/cli#using-the-v2-branch
 go get gopkg.in/urfave/cli.v2
-
-go run recon.go
 ```
 
 ### creating a local copy of the db
