@@ -3,7 +3,8 @@ CLI tool linking between pims and opencart
 
 Features (unchecked are TODO)
 - [x] Read pims export csv and display as yml
-- [ ] Read opencart mysql database and display data similar to yml of pims csv export
+- [x] Read opencart mysql database and display data similar to yml of pims csv export
+- [ ] Validate opencart: list products without categories, without qty, without price, etc.
 - [ ] Reconcile quantities between pims csv and opencart mysql database
 - [ ] Reconcile categories and category products between pims export and opencart database
 
@@ -21,7 +22,9 @@ Features (unchecked are TODO)
   e.g. `user:password@/dbname`
 * Produces yml output
 
-3. Reconcile: `go run pims-oc.go recon pims.csv <DSN>`
+3. Validate opencart: `go run pims-oc.go validate:oc <DSN>`
+
+4. Reconcile: `go run pims-oc.go recon pims.csv <DSN>`
 
 ## opencart hosted on a2hosting
 * mysql users on a2hosting are only allowed from `localhost`
