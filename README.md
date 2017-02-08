@@ -43,7 +43,13 @@ Install dependencies
 sudo apt-get install golang
 mkdir ~/.go
 export GOPATH=~/.go
+
+# https://github.com/Go-SQL-Driver/MySQL/#usage
 go get github.com/go-sql-driver/mysql
+
+# https://github.com/urfave/cli#using-the-v2-branch
+go get gopkg.in/urfave/cli.v2
+
 go run recon.go
 ```
 
