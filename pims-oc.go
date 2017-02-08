@@ -204,6 +204,6 @@ func main() {
   }
 
   app.Name = "pims-oc"
-  app.Version = "0.0.0.0"
+  app.Version = "0.0.1.0"
   app.Run(os.Args)
 }
