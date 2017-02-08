@@ -86,3 +86,13 @@ Note on `create.sql`
 ```bash
 wget https://raw.githubusercontent.com/opencart/opencart/master/upload/install/opencart.sql -O test/create.sql
 ```
+
+### Building binary
+Copied from [gosu](https://github.com/tianon/gosu/blob/master/Dockerfile)
+
+```bash
+CGO_ENABLED=0 GOARCH=amd64 go build -v -ldflags '-d -s -w' -o bin/pims-oc-amd64
+CGO_ENABLED=0 GOARCH=386 go build -v -ldflags '-d -s -w' -o bin/pims-oc-i386
+```
+
+where amd64 is from `dpkg --print-architecture`
