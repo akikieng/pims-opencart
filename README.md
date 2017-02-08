@@ -1,14 +1,27 @@
-# reconcile-pims-opencart
-Reconcile pims export (csv) with opencart export (sql)
+# pims-opencart
+CLI tool linking between pims and opencart
+
+Features (unchecked are TODO)
+- [ ] Read pims export csv and convert to yml
+- [ ] Read opencart mysql database and display data similar to yml of pims csv export
+- [ ] Reconcile quantities between pims csv and opencart mysql database
+- [ ] Reconcile categories and category products between pims export and opencart database
 
 ## Usage
-Run recon: `go run recon.go pims.csv DSN`
 
-where
+1. Read pims csv export: `go run pims-oc read:pims pims.csv`
+
 * `pims.csv` is the excel file of inventory by item exported from pims 2, and then saved as csv manually
+* Produces yml output
+
+2. Read opencart database: `go run pims-oc read:oc <DSN>`
+
 * DSN is as exemplified on
-[go mysql driver](https://github.com/Go-SQL-Driver/MySQL/#examples):
-e.g. `user:password@/dbname`
+  [go mysql driver](https://github.com/Go-SQL-Driver/MySQL/#examples):
+  e.g. `user:password@/dbname`
+* Produces yml output
+
+3. Reconcile: `go run pims-oc recon pims.csv <DSN>`
 
 ## opencart hosted on a2hosting
 * mysql users on a2hosting are only allowed from `localhost`
