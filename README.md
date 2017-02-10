@@ -4,12 +4,9 @@ CLI tool linking between pims and opencart
 Features (unchecked are TODO)
 - [x] Read pims export csv and display as yml
 - [x] Read opencart mysql database and display data similar to yml of pims csv export
-- [ ] ([issue 1](https://github.com/shadiakiki1986/pims-opencart/issues/1))
-      Validate opencart: list products without categories, without qty, without price, etc.
-- [ ] ([issue 2](https://github.com/shadiakiki1986/pims-opencart/issues/2))
-      Reconcile quantities between pims csv and opencart mysql database
-- [ ] ([issue 3](https://github.com/shadiakiki1986/pims-opencart/issues/3))
-      Reconcile categories and category products between pims export and opencart database
+- [ ] Validate opencart: list products without categories, without qty, without price, etc. ([issue 1](https://github.com/shadiakiki1986/pims-opencart/issues/1))
+- [ ] Reconcile quantities between pims csv and opencart mysql database ([issue 2](https://github.com/shadiakiki1986/pims-opencart/issues/2))
+- [ ] Reconcile categories and category products between pims export and opencart database ([issue 3](https://github.com/shadiakiki1986/pims-opencart/issues/3))
 
 ## Installation
 
