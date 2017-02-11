@@ -4,7 +4,7 @@ CLI tool linking between pims and opencart
 Features (unchecked are TODO)
 - [x] Read pims export csv and display as yml
 - [x] Read opencart mysql database and display data similar to yml of pims csv export
-- [ ] Validate opencart: list products without categories, without qty, without price, etc. ([issue 1](https://github.com/shadiakiki1986/pims-opencart/issues/1))
+- [x] Validate opencart: list products without categories, without image ([issue 1](https://github.com/shadiakiki1986/pims-opencart/issues/1))
 - [ ] Reconcile quantities between pims csv and opencart mysql database ([issue 2](https://github.com/shadiakiki1986/pims-opencart/issues/2))
 - [ ] Reconcile categories and category products between pims export and opencart database ([issue 3](https://github.com/shadiakiki1986/pims-opencart/issues/3))
 
@@ -25,18 +25,18 @@ sudo mv pims-oc-amd64 /usr/sbin/pims-oc
 1. Read pims csv export: `pims-oc read:pims pims.csv`
 
 * `pims.csv` is the excel file of inventory by item exported from pims 2, and then saved as csv manually
-* Produces yml output
+* Produces tabular output
 
 2. Read opencart database: `pims-oc read:oc <DSN>`
 
 * DSN is as exemplified on
   [go mysql driver](https://github.com/Go-SQL-Driver/MySQL/#examples):
   e.g. `user:password@/dbname`
-* Produces yml output
+* Produces tabular output
+* Includes field of warnings per product
+* To filter output for warnings only: `pims-oc read:oc --warnings <DSN>`
 
-3. Validate opencart: `pims-oc validate:oc <DSN>`
-
-4. Reconcile: `pims-oc recon pims.csv <DSN>`
+3. Reconcile: `pims-oc recon pims.csv <DSN>`
 
 ## opencart hosted on a2hosting
 * mysql users on a2hosting are only allowed from `localhost`
@@ -67,6 +67,9 @@ go get gopkg.in/urfave/cli.v2
 
 # https://github.com/go-yaml/yaml
 go get gopkg.in/yaml.v2
+
+# https://github.com/gosuri/uitable
+go get -v github.com/gosuri/uitable
 ```
 
 ### creating a local copy of the db

@@ -10,6 +10,7 @@ import (
   "strconv"
   "strings"
   "gopkg.in/yaml.v2"
+  "github.com/gosuri/uitable"
 )
 
 import "database/sql"
@@ -21,11 +22,13 @@ type Product struct {
   Desc string
   Qty int
   Price float64
+  Warning []string
+  Image string
 }
 
 // how to read a csv
 // http://stackoverflow.com/q/26437796/4126114
-func readPims(filename string) *map[string][]Product {
+func readPims(filename string) *map[string]Product {
   //log.Println("Reading csv file: ", filename)
   handle, err := os.Open(filename)
   if err != nil {
@@ -35,7 +38,7 @@ func readPims(filename string) *map[string][]Product {
   defer handle.Close()
 
   reader := csv.NewReader(handle)
-  data := map[string][]Product{}
+  data := map[string]Product{}
   current := ""
   for i := 0; i < 10000; i++ { // 10k lines max
       record, err := reader.Read()
@@ -61,7 +64,6 @@ func readPims(filename string) *map[string][]Product {
       // category
       if len(filtered)==1 {
         current = filtered[0]
-        data[current] = []Product{}
         continue
       }
 
@@ -76,7 +78,7 @@ func readPims(filename string) *map[string][]Product {
             log.Fatalf("Invalid price field found in %s / %s: %s",current, filtered[0], filtered[2])
           }
           pr := Product{Category: current, ID: filtered[0], Desc: filtered[1], Qty: qty, Price: price}
-          data[current] = append(data[current], pr)
+          data[pr.ID] = pr
           continue
         }
       }
@@ -95,7 +97,7 @@ func readPims(filename string) *map[string][]Product {
   return &data
 }
 
-func readOc(dsn string) *map[string][]Product {
+func readOc(dsn string) *map[string]Product {
   // log.Printf("Reading opencart data from: %s\n", dsn)
   db, err := sql.Open("mysql", dsn) // "root:password@/opencart"
   if err != nil {
@@ -111,12 +113,15 @@ func readOc(dsn string) *map[string][]Product {
   }
 
   // http://go-database-sql.org/retrieving.html
-  data := map[string][]Product{}
+  data := map[string]Product{}
   rows, err := db.Query(`
       select
-         model, price, quantity,
+         model,
+         price,
+         quantity,
          IFNULL(ocko_category_description.name,'No category') as category,
-         pd.name as description
+         pd.name as description,
+         image
       from ocko_product
       left join ocko_product_to_category p2c
         on p2c.product_id = ocko_product.product_id
@@ -131,16 +136,19 @@ func readOc(dsn string) *map[string][]Product {
   defer rows.Close()
   for rows.Next() {
     pr := Product{}
-    err := rows.Scan(&pr.ID,&pr.Price,&pr.Qty,&pr.Category,&pr.Desc)
+    err := rows.Scan(&pr.ID,&pr.Price,&pr.Qty,&pr.Category,&pr.Desc,&pr.Image)
     if err != nil {
       log.Fatal(err)
     }
 
-    // http://stackoverflow.com/a/2050629/4126114
-    if _, ok := data[pr.Category]; !ok {
-      data[pr.Category] = []Product{}
+    if pr.Category=="No category" {
+      pr.Warning = append(pr.Warning,"No category")
     }
-    data[pr.Category] = append(data[pr.Category],pr)
+    if pr.Image=="" {
+      pr.Warning = append(pr.Warning,"No image")
+    }
+
+    data[pr.ID] = pr
     // log.Println(pr.ID)
   }
   err = rows.Err()
@@ -151,7 +159,7 @@ func readOc(dsn string) *map[string][]Product {
   return &data
 }
 
-func printYaml(data *map[string][]Product) {
+func printYaml(data *map[string]Product) {
           // Golang - How to print struct variables in console?
           // http://stackoverflow.com/a/24512194/4126114
           // fmt.Printf("%+v\n", data)
@@ -168,6 +176,18 @@ func printYaml(data *map[string][]Product) {
           fmt.Println(string(y))
 }
 
+// https://github.com/gosuri/uitable/blob/master/example/main.go
+func printTable(data *map[string]Product) {
+  table := uitable.New()
+  table.MaxColWidth = 50
+
+  table.AddRow("Category", "ID", "Description", "Qty", "Price", "Image", "Warning")
+  for _, pr := range *data {
+    table.AddRow(pr.Category, pr.ID, pr.Desc, pr.Qty, pr.Price, pr.Image, strings.Join(pr.Warning,", "))
+  }
+  fmt.Println(table)
+}
+
 func main() {
   app := &cli.App{
     Commands: []*cli.Command{
@@ -181,7 +201,7 @@ func main() {
           }
           csvFile := c.Args().First() // Get(0)
           data := readPims(csvFile)
-          printYaml(data)
+          printTable(data) // Yaml
           return nil
         },
       },
@@ -189,21 +209,36 @@ func main() {
         Name:    "read:oc",
         Usage:   "Read data from opencart mysql database",
         ArgsUsage: "dsn",
+        Flags: []cli.Flag {
+          &cli.BoolFlag{
+            Name:        "warnings",
+            Value:       false,
+            Usage:       "Filter result only for warnings",
+          },
+        },
         Action:  func(c *cli.Context) error {
           if c.NArg() == 0 {
             log.Fatal("No DSN passed")
           }
           dsn := c.Args().First() // Get(0)
           data := readOc(dsn)
-          printYaml(data)
+          if c.Bool("warnings") {
+            filtered := map[string]Product{}
+            for _, pr := range *data {
+              if len(pr.Warning)>0 {
+                filtered[pr.ID]=pr
+              }
+            }
+            data=&filtered
+          }
+          printTable(data) // printYaml
           return nil
         },
       },
     },
-
   }
 
   app.Name = "pims-oc"
-  app.Version = "0.0.1.0"
+  app.Version = "0.0.2.0"
   app.Run(os.Args)
 }
